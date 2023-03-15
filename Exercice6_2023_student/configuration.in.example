@@ -1,0 +1,18 @@
+% Physique:
+R=3
+ra=2
+rb=1
+A=0
+epsilon_a=1
+epsilon_b=1
+epsilon_R=1
+Va=0.0
+VR=0.0
+
+% Numérique:
+N1=3
+N2=4
+output=output
+
+% Set to 0 to reduce printouts
+verbose=1 
