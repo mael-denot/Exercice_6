@@ -1,3 +1,26 @@
 finir l'implémentation en C++:
 	- éléments des matrices
-	- condition au bord voir règle des trapèzes
+	- condition au bord 
+	- intégrer sur les intervalles
+
+écrire des fonctions pour faire des plots
+
+
+Commandes:
+minGW32-make student
+./Exercice6_2023_student.exe
+python analyse.py
+
+
+
+
+
+
+explication du code par chatGPT:
+The program reads in a configuration file, whose name may be provided as a command line argument. The configuration file sets various constants used in the finite element calculation.
+
+Then, the program sets up finite element calculations for the electric field and electric displacement using a discretization of space into a set of point charges, and solving a linear system of equations to calculate the electric potential at each of those points.
+
+The distance between points and the linear system of equations to solve are set up in the main function. The electric field and electric displacement are then calculated using those results in the ConfigFile class. Finally, the program writes the results of the calculation to a set of output files.
+
+solve() function is used to solve the linear system of equations that are formed in main() function. epsilon() and rho_epsilon() functions are used to calculate electric displacement and electric field values for given positions. The program implements the Gauss-Jordan method to solve the linear system of equations. The calculation of electric potential is based on discretizing space into a set of point charges, which is done in the main function.
