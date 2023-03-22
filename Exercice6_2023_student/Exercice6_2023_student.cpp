@@ -37,27 +37,39 @@ solve(const vector<T>& diag,
     return solution;
 }
 
-// TODO: Computation of epsilon relative (vacuum + medium)
+// done: Computation of epsilon relative (vacuum + medium)
 double
 epsilon(double r, 
 	double R, 
 	double rb, 
+    double ra,
 	double epsilon_a, 
 	double epsilon_b, 
 	double epsilon_R)
 {
-     return 1.0;
+    if ((ra <= r) && (r <= rb)) {
+        return 1.0;
+    } else if ((rb <= r) && (r <= R)) {
+        return epsilon_b + (epsilon_R - epsilon_b) * (r - rb) / (R - rb);
+    }
+    throw std::runtime_error("epsilon: r is out of bounds");
 }
 
-// TODO: Computation of rho_eps=rho_free(r)/eps0
+// done: Computation of rho_eps=rho_free(r)/eps0
 
 double
 rho_epsilon(double r,
 	double ra,
 	double rb,
+    double R,
 	double A)
 {
-    return 0.0;
+    if ((ra <= r) && (r <= rb)) {
+        return 4*A*(r - ra)*(rb - r) / ((rb - ra)*(rb - ra));
+    } else if ((rb <= r) && (r <= R)) {
+        return 0.0;
+    }
+    throw std::runtime_error("rho_epsilon: r is out of bounds");
 }
 
 int
@@ -107,20 +119,26 @@ main(int argc, char* argv[])
     string fichier_E   = fichier+"_E.out";
     string fichier_D   = fichier+"_D.out";
 
-    // TODO: Create the finite elements
-    const int pointCount = 10;
+    // done: Create the finite elements
+    const int pointCount = N1 + N2;
 
-    // TODO: Initialize position of elements
+    // done: Initialize position of elements 
     vector<double> r(pointCount);
-    for (int i = 0; i < r.size(); ++i)
-        r[i] = i;
+    for (int i = 0; i < N1; ++i){
+        r[i] = ra + (rb - ra) * i / (N1);
+    }
+    for (size_t i = N1; i < N2; i++)
+    {
+        r[i] = rb + (R - rb) * (i - N1) / (N2);
+    }
     
-    // TODO: Calculate distance between elements
+    
+    // done: Calculate distance between elements
     vector<double> h(pointCount-1);
      vector<double> midPoint(pointCount-1);
     for (int i = 0; i < h.size(); ++i){
-        h[i] = 1;
-        midPoint[i] = i;
+        h[i] = r[i+1] - r[i];
+        midPoint[i] = (r[i] + h[i]/2);
     }
     // TODO: Construct the matrices
     vector<double> diagonal(pointCount, 1.0);  // Diagonal
@@ -137,7 +155,9 @@ main(int argc, char* argv[])
     }
     
     // TODO: Set boundary conditions
-    // ...
+    for (int i = 0; i < pointCount; ++i) {
+        
+    }
     
     // Solve the system of equations
     vector<double> phi = solve(diagonal, lower, upper, rhs);

@@ -1,0 +1,3 @@
+finir l'implémentation en C++:
+	- éléments des matrices
+	- condition au bord voir règle des trapèzes
