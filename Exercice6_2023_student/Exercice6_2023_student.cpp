@@ -23,16 +23,28 @@ solve(const vector<T>& diag,
     vector<T> new_rhs(rhs);
 
     for (int i = 1; i < diag.size(); ++i) {
+        if (new_diag[i - 1] == 0.0) {
+            throw std::runtime_error("solve: division by zero");
+        }
         double pivot = lower[i - 1] / new_diag[i - 1];
         new_diag[i] -= pivot * upper[i - 1];
         new_rhs[i] -= pivot * new_rhs[i - 1];
     }
 
-    solution[diag.size() - 1] =
-      new_rhs[diag.size() - 1] / new_diag[diag.size() - 1];
+    if (new_diag[diag.size() - 1] == 0.0) {
+        throw std::runtime_error("solve: division by zero");
+    }
+    solution[diag.size() - 1] = new_rhs[diag.size() - 1] / new_diag[diag.size() - 1];
 
     for (int i(diag.size() - 2); i >= 0; --i)
         solution[i] = (new_rhs[i] - upper[i] * solution[i + 1]) / new_diag[i];
+
+    //test if solution is nan
+    for (int i = 0; i < solution.size(); ++i) {
+        if (solution[i] != solution[i]) {
+            throw std::runtime_error("solve: solution is nan");
+        }
+    }
 
     return solution;
 }
@@ -40,9 +52,9 @@ solve(const vector<T>& diag,
 // done: Computation of epsilon relative (vacuum + medium)
 double
 epsilon(double r, 
-	double R, 
-	double rb, 
     double ra,
+	double rb, 
+	double R, 
 	double epsilon_a, 
 	double epsilon_b, 
 	double epsilon_R)
@@ -51,8 +63,10 @@ epsilon(double r,
         return 1.0;
     } else if ((rb <= r) && (r <= R)) {
         return epsilon_b + (epsilon_R - epsilon_b) * (r - rb) / (R - rb);
+    } else {
+        std::cout << "r = " << r << std::endl;
+        throw std::runtime_error("epsilon: r is out of bounds");
     }
-    throw std::runtime_error("epsilon: r is out of bounds");
 }
 
 // done: Computation of rho_eps=rho_free(r)/eps0
@@ -68,8 +82,10 @@ rho_epsilon(double r,
         return 4*A*(r - ra)*(rb - r) / ((rb - ra)*(rb - ra));
     } else if ((rb <= r) && (r <= R)) {
         return 0.0;
+    } else {
+        std::cout << "r = " << r << std::endl;
+        throw std::runtime_error("rho_epsilon: r is out of bounds");
     }
-    throw std::runtime_error("rho_epsilon: r is out of bounds");
 }
 
 int
@@ -127,48 +143,72 @@ main(int argc, char* argv[])
     for (int i = 0; i < N1; ++i){
         r[i] = ra + (rb - ra) * i / (N1);
     }
-    for (size_t i = N1; i < N2; i++)
+    for (size_t i = N1; i < N1+N2; i++)
     {
         r[i] = rb + (R - rb) * (i - N1) / (N2);
     }
+
+    std::cout << "r = ";
+    for (int i = 0; i < pointCount; ++i)
+        std::cout << r[i] << " ";
+
+    std::cout << std::endl;
     
     
     // done: Calculate distance between elements
     vector<double> h(pointCount-1);
-     vector<double> midPoint(pointCount-1);
+    vector<double> midPoint(pointCount-1);
+
     for (int i = 0; i < h.size(); ++i){
         h[i] = r[i+1] - r[i];
-        midPoint[i] = (r[i] + h[i]/2);
+        midPoint[i] = (r[i] + h[i]/2.0);
     }
-    // TODO: Construct the matrices
+    std::cout << "midPoint = ";
+    for (int i = 0; i < midPoint.size(); ++i)
+        std::cout << midPoint[i] << " ";
+    
+    std::cout << std::endl;
+
+    // done: Construct the matrices
     vector<double> diagonal(pointCount, 1.0);  // Diagonal
     vector<double> lower(pointCount - 1, 0.0); // Lower diagonal
     vector<double> upper(pointCount - 1, 0.0); // Upper diagonal
     vector<double> rhs(pointCount, 0.0);       // Right-hand-side
     
-    for (int i = 0; i < pointCount; ++i) { 
-        // TODO: Matrix entries
-        // upper[i] = ...
-        // lower[i] = ...
-        // diagonal[i] = ...
-        // rhs[i] = ...
+    for (int i = 0; i < pointCount-1; ++i) { 
+        // done: Matrix entries
+        upper[i] = 1.0/h[i];
+        lower[i] = 1.0/h[i];
+        diagonal[i] = 1.0/h[i] + 1.0/h[i+1];
+        rhs[i] = 1/h[i]*(0.5*(r[i+1]*r[i+1] - r[i]*r[i]) - r[i]*h[i]) * rho_epsilon(midPoint[i], ra, rb, R, A);
     }
     
-    // TODO: Set boundary conditions
-    for (int i = 0; i < pointCount; ++i) {
-        
-    }
+    // done: Set boundary conditions
+    diagonal[0] = 1.0;
+    upper[0] = 0.0;
+    lower[pointCount-2] = 0.0;
+    diagonal[pointCount-1] = 1.0;
+
     
     // Solve the system of equations
     vector<double> phi = solve(diagonal, lower, upper, rhs);
+    phi[0] = Va;
+    phi[pointCount-1] = VR;
 
-    // TODO: Calculate electric field E and displacement vector D
+    std::cout << "phi = ";
+    for (int i = 0; i < pointCount; ++i) {
+        std::cout << phi[i] << " ";
+    }
+    std::cout << std::endl;
+
+    // done but unsure: Calculate electric field E and displacement vector D
     vector<double> E(pointCount - 1, 0);
     vector<double> D(pointCount - 1, 0);
     double dphidr=0.0;
     for (int i = 0; i < E.size(); ++i) {
-        //E[i] = ...;
-        //D[i] = ...; //NB: Normalized D (factor of eps_0)
+        dphidr = (phi[i+1] - phi[i])/h[i];
+        E[i] = -dphidr;
+        D[i] = -dphidr*epsilon(r[i], ra, rb, R, epsilon_a, epsilon_b, epsilon_R);
     }
 
     // Export data

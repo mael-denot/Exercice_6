@@ -1,0 +1,5 @@
+le code donne phi = 0 pour tout r ce qui doit être incorrect
+explications potentielles:
+	- c'est une conséquence logique des conditions initiales
+	- la façon dont les éléments de la matrice et du membre de droite 
+	sont implémentés est incorrecte
