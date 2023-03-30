@@ -86,11 +86,31 @@ def test():
 
 def basic_plot():
     D, E, phi = runSimulation('Exercice6_2023_student', parameters)
-    plt.plot(D[:, 0], D[:, 1], label='D')
-    plt.plot(E[:, 0], E[:, 1], label='E')
-    plt.plot(phi[:, 0], phi[:, 1], label='phi')
-    plt.legend()
-    plt.show()
+
+    # ask whether to show or not
+    show = input('Show plot for D? (y/n) ')
+    if show == 'y':
+        plt.plot(D[:, 0], D[:, 1], label='D')
+        plt.legend('D')
+        plt.xlabel('r')
+        plt.title('D')
+        plt.show()
+
+    show = input('Show plot for E? (y/n) ')
+    if show == 'y':
+        plt.plot(E[:, 0], E[:, 1], label='E')
+        plt.legend('E')
+        plt.xlabel('r')
+        plt.title('E')
+        plt.show()
+
+    show = input('Show plot for phi? (y/n) ')
+    if show == 'y':
+        plt.plot(phi[:, 0], phi[:, 1], label='phi')
+        plt.legend('phi')
+        plt.xlabel('r')
+        plt.title('phi')
+        plt.show()
 
 # c) compare the numerical solution with the analytical solution
 

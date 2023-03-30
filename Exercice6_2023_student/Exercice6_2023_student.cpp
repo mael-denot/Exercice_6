@@ -88,6 +88,39 @@ rho_epsilon(double r,
     }
 }
 
+
+double f_A(  double r, 
+            double ra, 
+            double rb, 
+            double R, 
+            double A, 
+            double epsilon_a, 
+            double epsilon_b, 
+            double epsilon_R, 
+            double h_i,
+            double h_j
+            ) {
+    if (h_i == 0 || h_j == 0) {
+        throw std::runtime_error("f_A: h_i or h_j is zero");
+    }
+    return epsilon(r, ra, rb, R, epsilon_a, epsilon_b, epsilon_R) * r / (h_i * h_j);
+}
+
+double f_b( double r, 
+            double ra, 
+            double rb, 
+            double R, 
+            double A, 
+            double r_i,
+            double h_i) {
+    if (h_i == 0) {
+        throw std::runtime_error("f_b: h_i is zero");
+    }
+    return rho_epsilon(r, ra, rb, R, A) * r*(r-r_i)/h_i;
+}
+
+
+
 int
 main(int argc, char* argv[])
 {
@@ -136,14 +169,14 @@ main(int argc, char* argv[])
     string fichier_D   = fichier+"_D.out";
 
     // done: Create the finite elements
-    const int pointCount = N1 + N2;
+    const int pointCount = N1 + N2 + 1;
 
     // done: Initialize position of elements 
     vector<double> r(pointCount);
     for (int i = 0; i < N1; ++i){
         r[i] = ra + (rb - ra) * i / (N1);
     }
-    for (size_t i = N1; i < N1+N2; i++)
+    for (size_t i = N1; i < pointCount; i++)
     {
         r[i] = rb + (R - rb) * (i - N1) / (N2);
     }
@@ -159,13 +192,13 @@ main(int argc, char* argv[])
     vector<double> h(pointCount-1);
     vector<double> midPoint(pointCount-1);
 
-    for (int i = 0; i < h.size(); ++i){
+    for (int i = 0; i < pointCount-1; ++i){
         h[i] = r[i+1] - r[i];
         midPoint[i] = (r[i] + h[i]/2.0);
     }
-    std::cout << "midPoint = ";
-    for (int i = 0; i < midPoint.size(); ++i)
-        std::cout << midPoint[i] << " ";
+    std::cout << "h = ";
+    for (int i = 0; i < h.size(); ++i)
+        std::cout << h[i] << " ";
     
     std::cout << std::endl;
 
@@ -175,25 +208,73 @@ main(int argc, char* argv[])
     vector<double> upper(pointCount - 1, 0.0); // Upper diagonal
     vector<double> rhs(pointCount, 0.0);       // Right-hand-side
     
-    for (int i = 0; i < pointCount-1; ++i) { 
-        // done: Matrix entries
-        upper[i] = 1.0/h[i];
-        lower[i] = 1.0/h[i];
-        diagonal[i] = 1.0/h[i] + 1.0/h[i+1];
-        rhs[i] = 1/h[i]*(0.5*(r[i+1]*r[i+1] - r[i]*r[i]) - r[i]*h[i]) * rho_epsilon(midPoint[i], ra, rb, R, A);
+    double p(1.0); // p = 1.0 for the trapezoidal rule
+
+    for (int i = 0; i < pointCount-2; ++i) { 
+        // use the trapezoidal rule to approximate the integral
+        upper[i] = h[i] * (p * (f_A(r[i], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i+1]) + 
+                                f_A(r[i+1], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i+1])) + 
+                     (1.0-p) *  f_A(midPoint[i], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i+1]));
+
+        lower[i] = upper[i];
+
+        diagonal[i+1] = h[i] * (p * (f_A(r[i], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i]) + 
+                                   f_A(r[i+1], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i])) + 
+                        (1.0-p) *  f_A(midPoint[i], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i])) +
+                    h[i+1] * (p * (f_A(r[i+1], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i]) + 
+                                   f_A(r[i+2], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i])) + 
+                        (1.0-p) *  f_A(midPoint[i], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i]));
+  
+
+        rhs[i] = h[i]*(p * f_b(r[i+1], ra, rb, R, A, r[i], h[i])) + 
+                            (1.0-p)*f_b(midPoint[i], ra, rb, R, A, r[i], h[i]);
+                            
     }
     
+//    diagonal[1] = h[1] * (p * (f_A(r[i], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i+1]) + 
+//                                    f_A(r[i+1], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i])) + 
+//                         (1.0-p) *  f_A(midPoint[i], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i])) +
+//                       h[i] * (p * (f_A(r[i], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i]) + 
+//                                    f_A(r[i+1], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i])) + 
+//                         (1.0-p) *  f_A(midPoint[i], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i]));
+
+
     // done: Set boundary conditions
     diagonal[0] = 1.0;
     upper[0] = 0.0;
     lower[pointCount-2] = 0.0;
     diagonal[pointCount-1] = 1.0;
+    rhs[0] = Va;
+    rhs[pointCount-1] = VR;
+
+    // cout the elements of the matrix
+    std::cout << "diagonal = ";
+    for (int i = 0; i < pointCount; ++i) {
+        std::cout << diagonal[i] << " ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "lower = ";
+    for (int i = 0; i < pointCount-1; ++i) {
+        std::cout << lower[i] << " ";
+    }
+    std::cout << std::endl;
+    
+    std::cout << "upper = ";
+    for (int i = 0; i < pointCount-1; ++i) {
+        std::cout << upper[i] << " ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "rhs = ";
+    for (int i = 0; i < pointCount; ++i) {
+        std::cout << rhs[i] << " ";
+    }
+    std::cout << std::endl;
 
     
     // Solve the system of equations
     vector<double> phi = solve(diagonal, lower, upper, rhs);
-    phi[0] = Va;
-    phi[pointCount-1] = VR;
 
     std::cout << "phi = ";
     for (int i = 0; i < pointCount; ++i) {
