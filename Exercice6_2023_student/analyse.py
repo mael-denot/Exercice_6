@@ -60,8 +60,8 @@ parameters = {
     'VR':0.0,
 
     # Numérique:
-    'N1':10,
-    'N2':10,
+    'N1':100,
+    'N2':100,
     'output':'output',
 
     # Set to 0 to reduce printouts

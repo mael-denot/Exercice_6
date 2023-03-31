@@ -218,34 +218,37 @@ main(int argc, char* argv[])
 
         lower[i] = upper[i];
 
-        diagonal[i+1] = h[i] * (p * (f_A(r[i], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i]) + 
+        diagonal[i+1] = -( h[i+1] * (p * (f_A(r[i], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i]) + 
                                    f_A(r[i+1], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i])) + 
                         (1.0-p) *  f_A(midPoint[i], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i])) +
                     h[i+1] * (p * (f_A(r[i+1], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i]) + 
                                    f_A(r[i+2], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i])) + 
-                        (1.0-p) *  f_A(midPoint[i], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i]));
+                        (1.0-p) *  f_A(midPoint[i], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i])));
   
 
         rhs[i] = h[i]*(p * f_b(r[i+1], ra, rb, R, A, r[i], h[i])) + 
                             (1.0-p)*f_b(midPoint[i], ra, rb, R, A, r[i], h[i]);
                             
     }
-    
+
+    // done: Set boundary conditions
+    diagonal[0] = 1.0;
+    upper[0] = 0.0;
+    upper[pointCount-2] = 39.0;
+    lower[pointCount-2] = 0.0;
+    diagonal[pointCount-1] = 1.0;
+    rhs[0] = Va;
+    rhs[pointCount-1] = VR;
+
 //    diagonal[1] = h[1] * (p * (f_A(r[i], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i+1]) + 
 //                                    f_A(r[i+1], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i])) + 
 //                         (1.0-p) *  f_A(midPoint[i], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i])) +
 //                       h[i] * (p * (f_A(r[i], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i]) + 
 //                                    f_A(r[i+1], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i])) + 
 //                         (1.0-p) *  f_A(midPoint[i], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i]));
-
-
-    // done: Set boundary conditions
-    diagonal[0] = 1.0;
-    upper[0] = 0.0;
-    lower[pointCount-2] = 0.0;
-    diagonal[pointCount-1] = 1.0;
-    rhs[0] = Va;
-    rhs[pointCount-1] = VR;
+    //upper[pointCount-2] = h[pointCount-2] * (p * (f_A(r[pointCount-2], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[pointCount-2], h[pointCount-1]) + 
+                    //             f_A(r[pointCount-1], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[pointCount-2], h[pointCount]-1)) + 
+                    //  (1.0-p) *  f_A(midPoint[pointCount-2], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[pointCount-2], h[pointCount-1]));;
 
     // cout the elements of the matrix
     std::cout << "diagonal = ";
