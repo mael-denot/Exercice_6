@@ -166,7 +166,7 @@ def convergence_study_phi(params):
 # c)
 parameters['N1'] = 1000
 parameters['N2'] = 1
-parameters['p'] = 1.0
+parameters['p'] = 0.5
 parameters['talk'] = 'false'
 plot_phi(parameters)
 # convergence_study_phi(parameters)

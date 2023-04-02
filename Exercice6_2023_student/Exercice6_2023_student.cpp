@@ -235,7 +235,7 @@ main(int argc, char* argv[])
                         (1.0-p) *  f_A(midPoint[i], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i])) +
                     h[i+1] * (p * (f_A(r[i+1], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i]) + 
                                    f_A(r[i+2], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i])) + 
-                        (1.0-p) *  f_A(midPoint[i], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i])));
+                        (1.0-p) *  f_A(midPoint[i+1], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i])));
   
 
         rhs[i] = h[i]*(p * f_b(r[i+1], ra, rb, R, A, r[i], h[i])) + 
