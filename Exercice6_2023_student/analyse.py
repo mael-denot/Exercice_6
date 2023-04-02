@@ -141,19 +141,55 @@ def plot_phi(params):
 
 # convergence study of phi as a function of N1, compute the error using the analytical solution
 def convergence_study_phi(params):
-    N1 = np.logspace(1, 3, 10)
-    params['N2'] = 0
+    nb_points = 100
+    # nb_points = input('Number of points for convergence study: ')
+    N1 = np.logspace(1, 3, nb_points)
+    params['N2'] = 1
     error = np.zeros(len(N1))
-    for i in range(len(N1)):
+    for i in range(nb_points):
         params['N1'] = int(N1[i])
-        phi = runSimulation('Exercice6_2023_student', params)
-        error[i] = np.max(np.abs(phi_analytical(phi[:, 0], params['ra'], params['R'], params['Va']) - phi[:, 1]))
-    plt.loglog(N1, error)
+        D, E, phi = runSimulation('Exercice6_2023_student', params)
+        error[i] = np.max(np.abs(phi[:, 1] - phi_analytical(phi[:, 0], params['ra'], params['R'], params['Va'])))
+    # plot error with a log scale on the y axis
+    plt.semilogx(N1, error)
     plt.xlabel('N1')
     plt.ylabel('error')
     plt.title('Convergence study of phi')
     plt.show()
 
+def convergence_study_phi_test(params):
+    nb_points = 70
+    # nb_points = input('Number of points for convergence study: ')
+    N1 = np.logspace(1, 3, nb_points)
+    params['N2'] = 1
+    error1 = np.zeros(len(N1))
+    for i in range(nb_points):
+        params['N1'] = int(N1[i])
+        D, E, phi = runSimulation('Exercice6_2023_student', params)
+        error1[i] = np.max(np.abs(phi[:, 1] - phi_analytical(phi[:, 0], params['ra'], params['R'], params['Va'])))
+
+    params['N2'] = 2
+    error2 = np.zeros(len(N1))
+    for i in range(nb_points):
+        params['N1'] = int(N1[i])
+        D, E, phi = runSimulation('Exercice6_2023_student', params)
+        error2[i] = np.max(np.abs(phi[:, 1] - phi_analytical(phi[:, 0], params['ra'], params['R'], params['Va'])))
+
+    params['N2'] = 3
+    error3 = np.zeros(len(N1))
+    for i in range(nb_points):
+        params['N1'] = int(N1[i])
+        D, E, phi = runSimulation('Exercice6_2023_student', params)
+        error3[i] = np.max(np.abs(phi[:, 1] - phi_analytical(phi[:, 0], params['ra'], params['R'], params['Va'])))
+
+    # plot error with a log scale on the y axis
+    plt.semilogx(N1, error1)
+    plt.semilogx(N1, error2)
+    plt.semilogx(N1, error3)
+    plt.xlabel('N1')
+    plt.ylabel('error')
+    plt.title('Convergence study of phi')
+    plt.show()
 
 
 
@@ -167,6 +203,15 @@ def convergence_study_phi(params):
 parameters['N1'] = 1000
 parameters['N2'] = 1
 parameters['p'] = 0.5
-parameters['talk'] = 'false'
+parameters['talk'] = 'true'
 plot_phi(parameters)
+parameters['verbose'] = 0
+# convergence_study_phi_test(parameters)
+parameters['p'] = 1.0
+plot_phi(parameters)
+# convergence_study_phi(parameters)
+parameters['p'] = 0.0
+plot_phi(parameters)
+# convergence_study_phi(parameters)
+# parameters['p'] = 0.5
 # convergence_study_phi(parameters)

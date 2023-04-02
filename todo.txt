@@ -1,20 +1,22 @@
-finir l'implémentation en C++:
-	- éléments des matrices
-	- condition au bord 
-	- intégrer sur les intervalles
+
 
 écrire des fonctions pour faire des plots
+(c) convergence
+Ne fonctionne pas. Pic autour de N1 = 54, ne tend pas vers 0 pour des grandes valeurs de N1
+- tester avec plusieurs valeurs de N2
+(d) 
+
+
+
+
+
+
 
 
 Commandes:
 minGW32-make student
 ./Exercice6_2023_student.exe
 python analyse.py
-
-
-
-
-
 
 explication du code par chatGPT:
 The program reads in a configuration file, whose name may be provided as a command line argument. The configuration file sets various constants used in the finite element calculation.

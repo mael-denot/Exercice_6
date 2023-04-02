@@ -224,9 +224,9 @@ main(int argc, char* argv[])
 
     for (int i = 0; i < pointCount-2; ++i) { 
         // use the trapezoidal rule to approximate the integral
-        upper[i] = h[i] * (p * (f_A(r[i], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i+1]) + 
-                                f_A(r[i+1], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i+1])) + 
-                     (1.0-p) *  f_A(midPoint[i], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i+1]));
+        upper[i] = h[i] * (p * (f_A(r[i], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i-1]) + 
+                                f_A(r[i+1], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i-1])) + 
+                     (1.0-p) *  f_A(midPoint[i], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[i], h[i-1]));
 
         lower[i] = upper[i];
 
@@ -246,7 +246,12 @@ main(int argc, char* argv[])
     // done: Set boundary conditions
     diagonal[0] = 1.0;
     upper[0] = 0.0;
-    upper[pointCount-2] = 39.0;
+    upper[pointCount-2] = h[pointCount - 2] * (p * (f_A(r[pointCount - 2], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[pointCount-3], h[pointCount-2]) + 
+                                f_A(r[pointCount-2], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[pointCount-3], h[pointCount - 2])) + 
+                     (1.0-p) *  f_A(midPoint[pointCount - 2], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[pointCount - 3], h[pointCount - 2]));
+    lower[0] = h[0] * (p * (f_A(r[0], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[0], h[1]) + 
+                                f_A(r[1], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[0], h[1])) + 
+                     (1.0-p) *  f_A(midPoint[0], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[0], h[1]));
     lower[pointCount-2] = 0.0;
     diagonal[pointCount-1] = 1.0;
     rhs[0] = Va;
