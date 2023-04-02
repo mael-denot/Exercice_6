@@ -50,7 +50,7 @@ def runSimulation(cppFile, params):
 parameters = {
     # Physique:
     'ra':0.03,
-    'rb':0.05,
+    'rb':0.099,
     'R':0.10,
     'A':0,
     'epsilon_a':1,
@@ -63,9 +63,11 @@ parameters = {
     'N1':100,
     'N2':100,
     'output':'output',
+    'p':0.5,
 
     # Set to 0 to reduce printouts
     'verbose':1 ,
+    'talk':'true',
 }
 
     
@@ -76,7 +78,11 @@ parameters = {
 
 # def E_analytical(R, ra, rb, A, epsilon_a, epsilon_b, epsilon_R, Va, VR):
 
-# def phi_analytical(R, ra, rb, A, epsilon_a, epsilon_b, epsilon_R, Va, VR):
+def phi_analytical(r, ra, R, Va):
+    return Va*np.log(r/R)/np.log(ra/R)
+
+def phi_analytical_d(r, ra, R, Va):
+    return Va*r/(ra - R) + Va*R/(R - ra)
 
 # plots
 
@@ -106,25 +112,61 @@ def basic_plot():
 
     show = input('Show plot for phi? (y/n) ')
     if show == 'y':
+
         plt.plot(phi[:, 0], phi[:, 1], label='phi')
-        plt.legend('phi')
+        plt.plot(phi[:, 0], phi_analytical(phi[:, 0], parameters['ra'], parameters['R'], parameters['Va']), label='phi_analytical')
+        plt.legend('phi', 'phi_analytical')
         plt.xlabel('r')
         plt.title('phi')
         plt.show()
 
+def plot_r(params):
+    D, E, phi = runSimulation('Exercice6_2023_student', params)
+    plt.plot(D[:, 0], label='r')
+    plt.legend('r')
+    plt.xlabel('r')
+
 # c) compare the numerical solution with the analytical solution
 
-# convergence study of phi as a function of N1
-def convergence_study_phi():
-    N1 = [3, 4, 5, 6, 7, 8, 9, 10]
-    phi = []
-    for i in range(len(N1)):
-        parameters['N1'] = N1[i]
-        D, E, phi_i = runSimulation('Exercice6_2023_student', parameters)
-        phi.append(phi_i[-1, 1])
-    plt.plot(N1, phi, label='phi')
-    plt.legend()
+def plot_phi(params):
+    D, E, phi = runSimulation('Exercice6_2023_student', params)
+    plt.plot(phi[:, 0], phi[:, 1], label='phi')
+    plt.plot(phi[:, 0], phi_analytical(phi[:, 0], params['ra'], params['R'], params['Va']), label='phi_analytical')
+    plt.legend('phi', 'phi_analytical')
+    plt.xlabel('r')
+    plt.title('phi')
     plt.show()
 
+
+
+# convergence study of phi as a function of N1, compute the error using the analytical solution
+def convergence_study_phi(params):
+    N1 = np.logspace(1, 3, 10)
+    params['N2'] = 0
+    error = np.zeros(len(N1))
+    for i in range(len(N1)):
+        params['N1'] = int(N1[i])
+        phi = runSimulation('Exercice6_2023_student', params)
+        error[i] = np.max(np.abs(phi_analytical(phi[:, 0], params['ra'], params['R'], params['Va']) - phi[:, 1]))
+    plt.loglog(N1, error)
+    plt.xlabel('N1')
+    plt.ylabel('error')
+    plt.title('Convergence study of phi')
+    plt.show()
+
+
+
+
+
+
+
 # test()
-basic_plot()
+# basic_plot()
+
+# c)
+parameters['N1'] = 1000
+parameters['N2'] = 1
+parameters['p'] = 1.0
+parameters['talk'] = 'false'
+plot_phi(parameters)
+# convergence_study_phi(parameters)

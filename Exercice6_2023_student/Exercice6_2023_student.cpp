@@ -140,11 +140,15 @@ main(int argc, char* argv[])
     // Set verbosity level. Set to 0 to reduce printouts in console.
     const int verbose = configFile.get<int>("verbose");
     configFile.setVerbosity(verbose);
+    bool talk = configFile.get<bool>("talk");
 
     // Read geometrical inputs
     const double R  = configFile.get<double>("R");
     const double ra = configFile.get<double>("ra");
     const double rb = configFile.get<double>("rb");
+    if (ra < 0 || rb < ra || R < rb) {
+        throw std::runtime_error("main: ra, rb and R must be positive and ra < rb < R");
+    }
     
     // Free charge source
     const double A = configFile.get<double>("A");
@@ -153,6 +157,7 @@ main(int argc, char* argv[])
     const double epsilon_a = configFile.get<double>("epsilon_a");
     const double epsilon_b = configFile.get<double>("epsilon_b");
     const double epsilon_R = configFile.get<double>("epsilon_R");
+
     
     // Boundary conditions
     const double Va = configFile.get<double>("Va");
@@ -161,6 +166,9 @@ main(int argc, char* argv[])
     // Discretization
     const int N1 = configFile.get<int>("N1");
     const int N2 = configFile.get<int>("N2");
+    if (N1 < 1 || N2 < 1) {
+        throw std::runtime_error("main: N1 and N2 must be positive");
+    }
     
     // Fichiers de sortie:
     string fichier = configFile.get<string>("output");
@@ -182,10 +190,12 @@ main(int argc, char* argv[])
     }
 
     std::cout << "r = ";
-    for (int i = 0; i < pointCount; ++i)
-        std::cout << r[i] << " ";
+    if (talk) {
+        for (int i = 0; i < pointCount; ++i)
+            std::cout << r[i] << " ";
 
-    std::cout << std::endl;
+        std::cout << std::endl;
+    }
     
     
     // done: Calculate distance between elements
@@ -196,11 +206,12 @@ main(int argc, char* argv[])
         h[i] = r[i+1] - r[i];
         midPoint[i] = (r[i] + h[i]/2.0);
     }
-    std::cout << "h = ";
-    for (int i = 0; i < h.size(); ++i)
-        std::cout << h[i] << " ";
-    
-    std::cout << std::endl;
+    if (talk)
+    { std::cout << "h = ";
+        for (int i = 0; i < h.size(); ++i)
+            std::cout << h[i] << " ";
+        
+        std::cout << std::endl;}
 
     // done: Construct the matrices
     vector<double> diagonal(pointCount, 1.0);  // Diagonal
@@ -209,6 +220,7 @@ main(int argc, char* argv[])
     vector<double> rhs(pointCount, 0.0);       // Right-hand-side
     
     double p(1.0); // p = 1.0 for the trapezoidal rule
+    p = configFile.get<double>("p");
 
     for (int i = 0; i < pointCount-2; ++i) { 
         // use the trapezoidal rule to approximate the integral
@@ -251,39 +263,42 @@ main(int argc, char* argv[])
                     //  (1.0-p) *  f_A(midPoint[pointCount-2], ra, rb, R, A, epsilon_a, epsilon_b, epsilon_R, h[pointCount-2], h[pointCount-1]));;
 
     // cout the elements of the matrix
-    std::cout << "diagonal = ";
-    for (int i = 0; i < pointCount; ++i) {
-        std::cout << diagonal[i] << " ";
-    }
-    std::cout << std::endl;
 
-    std::cout << "lower = ";
-    for (int i = 0; i < pointCount-1; ++i) {
-        std::cout << lower[i] << " ";
-    }
-    std::cout << std::endl;
-    
-    std::cout << "upper = ";
-    for (int i = 0; i < pointCount-1; ++i) {
-        std::cout << upper[i] << " ";
-    }
-    std::cout << std::endl;
+    if (talk){
+        std::cout << "diagonal = ";
+        for (int i = 0; i < pointCount; ++i) {
+            std::cout << diagonal[i] << " ";
+        }
+        std::cout << std::endl;
 
-    std::cout << "rhs = ";
-    for (int i = 0; i < pointCount; ++i) {
-        std::cout << rhs[i] << " ";
-    }
-    std::cout << std::endl;
+        std::cout << "lower = ";
+        for (int i = 0; i < pointCount-1; ++i) {
+            std::cout << lower[i] << " ";
+        }
+        std::cout << std::endl;
+        
+        std::cout << "upper = ";
+        for (int i = 0; i < pointCount-1; ++i) {
+            std::cout << upper[i] << " ";
+        }
+        std::cout << std::endl;
 
+        std::cout << "rhs = ";
+        for (int i = 0; i < pointCount; ++i) {
+            std::cout << rhs[i] << " ";
+        }
+        std::cout << std::endl;
+    }
     
     // Solve the system of equations
     vector<double> phi = solve(diagonal, lower, upper, rhs);
 
-    std::cout << "phi = ";
-    for (int i = 0; i < pointCount; ++i) {
-        std::cout << phi[i] << " ";
-    }
-    std::cout << std::endl;
+        if (talk){
+        std::cout << "phi = ";
+        for (int i = 0; i < pointCount; ++i) {
+            std::cout << phi[i] << " ";
+        }
+        std::cout << std::endl;}
 
     // done but unsure: Calculate electric field E and displacement vector D
     vector<double> E(pointCount - 1, 0);

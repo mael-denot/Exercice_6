@@ -9,10 +9,13 @@ epsilon_R=1
 Va=1.5
 VR=0.0
 
+
 % Numérique:
 N1=10
 N2=10
 output=output
+p=0.5
 
 % Set to 0 to reduce printouts
 verbose=1 
+talk=true
