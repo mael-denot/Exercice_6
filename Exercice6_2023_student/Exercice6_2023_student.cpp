@@ -166,7 +166,7 @@ main(int argc, char* argv[])
     // Discretization
     const int N1 = configFile.get<int>("N1");
     const int N2 = configFile.get<int>("N2");
-    if (N1 < 1 || N2 < 1) {
+    if (N1 < 0 || N2 < 0) {
         throw std::runtime_error("main: N1 and N2 must be positive");
     }
     
@@ -181,16 +181,18 @@ main(int argc, char* argv[])
 
     // done: Initialize position of elements 
     vector<double> r(pointCount);
-    for (int i = 0; i < N1; ++i){
-        r[i] = ra + (rb - ra) * i / (N1);
-    }
-    for (size_t i = N1; i < pointCount; i++)
-    {
-        r[i] = rb + (R - rb) * (i - N1) / (N2);
-    }
+    if (N1 > 0) {
+        for (int i = 0; i < N1; ++i){
+            r[i] = ra + (rb - ra) * i / (N1);
+    }}
+    if (N2 > 0){    
+        for (size_t i = N1; i < pointCount; i++)
+        {
+            r[i] = rb + (R - rb) * (i - N1) / (N2);
+    }}
 
-    std::cout << "r = ";
     if (talk) {
+        std::cout << "r = ";
         for (int i = 0; i < pointCount; ++i)
             std::cout << r[i] << " ";
 

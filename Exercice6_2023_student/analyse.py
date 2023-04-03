@@ -130,11 +130,15 @@ def plot_r(params):
 
 def plot_phi(params):
     D, E, phi = runSimulation('Exercice6_2023_student', params)
-    plt.plot(phi[:, 0], phi[:, 1], label='phi')
-    plt.plot(phi[:, 0], phi_analytical(phi[:, 0], params['ra'], params['R'], params['Va']), label='phi_analytical')
-    plt.legend('phi', 'phi_analytical')
-    plt.xlabel('r')
-    plt.title('phi')
+    plt.plot(phi[:, 0], phi[:, 1], label='Computed $\phi$')
+    plt.plot(phi[:, 0], phi_analytical(phi[:, 0], params['ra'], params['R'], params['Va']), label='Analytical $\phi$')
+    # plt.rcParams.update({
+    # "text.usetex": True,
+    # "font.family": "Helvetica"
+    # })
+    plt.legend()
+    plt.xlabel('$r$')
+    plt.ylabel('$\phi$')
     plt.show()
 
 
@@ -156,6 +160,68 @@ def convergence_study_phi(params):
     plt.ylabel('error')
     plt.title('Convergence study of phi')
     plt.show()
+
+def convergence_study_phi_half(params):
+    nb_points = 100
+    # nb_points = input('Number of points for convergence study: ')
+    N = np.logspace(1, 4, nb_points)
+    error = np.zeros(len(N))
+    for i in range(nb_points):
+        params['N1'] = int(N[i])/2
+        params['N2'] = int(N[i])/2
+        D, E, phi = runSimulation('Exercice6_2023_student', params)
+        error[i] = np.max(np.abs(phi[:, 1] - phi_analytical(phi[:, 0], params['ra'], params['R'], params['Va'])))
+    plt.loglog(N, error)
+    plt.xlabel('N')
+    plt.ylabel('error')
+    plt.title('Convergence study of phi')
+    plt.show()
+
+def convergence_study_phi_final_version(params):
+    nb_points = 100
+    # nb_points = input('Number of points for convergence study: ')
+    N = np.logspace(1, 4, nb_points)
+
+    error1 = np.zeros(len(N))
+    params['p'] = 1.0
+    for i in range(nb_points):
+        params['N1'] = int(N[i])/2
+        params['N2'] = int(N[i])/2
+        D, E, phi = runSimulation('Exercice6_2023_student', params)
+        error1[i] = np.max(np.abs(phi[:, 1] - phi_analytical(phi[:, 0], params['ra'], params['R'], params['Va'])))
+
+    error2 = np.zeros(len(N))
+    params['p'] = 0.0
+    for i in range(nb_points):
+        params['N1'] = int(N[i])/2
+        params['N2'] = int(N[i])/2
+        D, E, phi = runSimulation('Exercice6_2023_student', params)
+        error2[i] = np.max(np.abs(phi[:, 1] - phi_analytical(phi[:, 0], params['ra'], params['R'], params['Va'])))
+
+    error3 = np.zeros(len(N))
+    params['p'] = 0.5
+    for i in range(nb_points):
+        params['N1'] = int(N[i])/2
+        params['N2'] = int(N[i])/2
+        D, E, phi = runSimulation('Exercice6_2023_student', params)
+        error3[i] = np.max(np.abs(phi[:, 1] - phi_analytical(phi[:, 0], params['ra'], params['R'], params['Va'])))
+
+    # plt.rcParams.update({
+    #     "text.usetex": True,
+    #     "font.family": "Helvetica"
+    # })
+
+    # plot errors in loglog scale with different linewidths
+    plt.loglog(N, error3, label='$p=0.5$', linewidth=9)
+    plt.loglog(N, error1, label='$p=1$', linewidth=3)
+    plt.loglog(N, error2, label='$p=0$', linewidth=1)
+    plt.xlabel('N')
+    plt.ylabel('error')
+    # plt.title('Convergence study of $\phi$')
+    plt.legend()
+    plt.show()
+
+
 
 def convergence_study_phi_test(params):
     nb_points = 70
@@ -200,18 +266,23 @@ def convergence_study_phi_test(params):
 # basic_plot()
 
 # c)
-parameters['N1'] = 1000
-parameters['N2'] = 1
+parameters['ra'] = 0.1
+parameters['rb'] = 0.55
+parameters['R'] = 1.0
+parameters['N1'] = 500
+parameters['N2'] = 500
 parameters['p'] = 0.5
-parameters['talk'] = 'true'
+parameters['talk'] = 'false'
 plot_phi(parameters)
 parameters['verbose'] = 0
+# convergence_study_phi_half(parameters)
 # convergence_study_phi_test(parameters)
-parameters['p'] = 1.0
-plot_phi(parameters)
+# parameters['p'] = 1.0
+# plot_phi(parameters)
 # convergence_study_phi(parameters)
-parameters['p'] = 0.0
-plot_phi(parameters)
-# convergence_study_phi(parameters)
+# parameters['p'] = 0.0
+# plot_phi(parameters)
+# convergence_study_phi(parame  ters)
 # parameters['p'] = 0.5
 # convergence_study_phi(parameters)
+# convergence_study_phi_final_version(parameters)
