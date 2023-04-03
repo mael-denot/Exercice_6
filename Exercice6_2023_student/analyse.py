@@ -86,8 +86,8 @@ def phi_analytical_d(r, ra, R, Va):
 
 # plots
 
-def test():
-    D, E, phi = runSimulation('Exercice6_2023_student', parameters)
+def test(params):
+    D, E, phi = runSimulation('Exercice6_2023_student', params)
     print(D, E, phi)
 
 def basic_plot():
@@ -273,7 +273,7 @@ parameters['N1'] = 500
 parameters['N2'] = 500
 parameters['p'] = 0.5
 parameters['talk'] = 'false'
-plot_phi(parameters)
+# plot_phi(parameters)
 parameters['verbose'] = 0
 # convergence_study_phi_half(parameters)
 # convergence_study_phi_test(parameters)
@@ -286,3 +286,31 @@ parameters['verbose'] = 0
 # parameters['p'] = 0.5
 # convergence_study_phi(parameters)
 # convergence_study_phi_final_version(parameters)
+
+
+# test dimitri
+
+parameters_dimitri = {
+    # Physique:
+    'ra':0.03,
+    'rb':0.05,
+    'R':0.10,
+    'A':2e4,
+    'epsilon_a':1,
+    'epsilon_b':5,
+    'epsilon_R':2,
+    'Va':1.5,
+    'VR':0.0,
+
+    # Numérique:
+    'N1':10,
+    'N2':10,
+    'output':'output',
+    'p':0.5,
+
+    # Set to 0 to reduce printouts
+    'verbose':1 ,
+    'talk':'true',
+}
+
+test(parameters_dimitri)

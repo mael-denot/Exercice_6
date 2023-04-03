@@ -2,10 +2,10 @@
 ra=0.03
 rb=0.05
 R=0.10
-A=0
+A=2e4
 epsilon_a=1
-epsilon_b=1
-epsilon_R=1
+epsilon_b=5
+epsilon_R=2
 Va=1.5
 VR=0.0
 
